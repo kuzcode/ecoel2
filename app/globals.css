@@ -210,3 +210,35 @@
 .bottom24px{
   margin-bottom: 24px;
 }
+
+.leftsidebar_link {
+  height: 50px;
+  padding: 12px 18px;
+  margin: -6px -6px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.bottombar_link{
+  padding: 10px 14px;
+}
+
+
+.bottombar_link .object-contain{
+  transform: scale(1.1);
+}
+
+.btnContainer {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  justify-content: center;
+}
+
+.btnContainer .btn {
+  max-width: 400px;
+  width: 100%;
+  position: relative;
+  margin: 6px 12px;
+}

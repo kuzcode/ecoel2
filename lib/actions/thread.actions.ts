@@ -51,26 +51,19 @@ export async function fetchPosts(pageNumber = 1, pageSize = 20) {
 interface Params {
   text: string,
   author: string,
-  communityId: string | null,
   path: string,
-  likes: string,
+  likes: Array<string>,
 }
 
-export async function createThread({ text, author, communityId, path, likes}: Params
+export async function createThread({ text, author, path, likes,}: Params
 ) {
   try {
     connectToDB();
-
-    const communityIdObject = await Community.findOne(
-      { id: communityId },
-      { _id: 1 }
-    );
 
     const createdThread = await Thread.create({
       text,
       author,
       likes,
-      community: communityIdObject, // Assign communityId if provided, or leave it null for personal account
     });
 
     // Update User model
@@ -78,18 +71,12 @@ export async function createThread({ text, author, communityId, path, likes}: Pa
       $push: { threads: createdThread._id },
     });
 
-    if (communityIdObject) {
-      // Update Community model
-      await Community.findByIdAndUpdate(communityIdObject, {
-        $push: { threads: createdThread._id },
-      });
-    }
-
     revalidatePath(path);
   } catch (error: any) {
     throw new Error(`Failed to create thread: ${error.message}`);
   }
 }
+
 
 async function fetchAllChildThreads(threadId: string): Promise<any[]> {
   const childThreads = await Thread.find({ parentId: threadId });
@@ -101,6 +88,64 @@ async function fetchAllChildThreads(threadId: string): Promise<any[]> {
   }
 
   return descendantThreads;
+}
+
+export async function likeThread(id: string, currentUserId: string, likes: Array<string> ): Promise<void> {
+  try {
+    connectToDB();
+
+    // Find the thread to be deleted (the main thread)
+    const mainThread = await Thread.findById(id).populate("author community");
+
+    if (!mainThread) {
+      throw new Error("Thread not found");
+    }
+
+    likes.push(currentUserId)
+
+    const likedThread = await Thread.findByIdAndUpdate(
+      id,
+      { $addToSet: { likes: currentUserId } },
+      { new: true }
+    );
+
+    console.log('likes list: ' + likes)
+
+  } catch (error: any) {
+    throw new Error(`Failed to like thread: ${error.message}`);
+  }
+}
+
+export async function dislikeThread(id: string, currentUserId: string, likes: Array<string> ): Promise<void> {
+  try {
+    connectToDB();
+
+    // Find the thread to be deleted (the main thread)
+    const mainThread = await Thread.findById(id).populate("author community");
+
+    if (!mainThread) {
+      throw new Error("Thread not found");
+    }
+    console.log('likes list: ' + likes)
+
+
+    var index = likes.indexOf(currentUserId);
+    likes.splice(index, 1);
+
+    console.log('likes list: ' + likes)
+
+    const dislikedThread = await Thread.findByIdAndUpdate(
+      id,
+      { $pull: { likes: currentUserId } }, // Добавить userId в массив, если его там еще нет
+      { new: true }
+    );
+
+    console.log('disliked by: ' + currentUserId + '; likes list: ' + likes)
+
+
+  } catch (error: any) {
+    throw new Error(`Failed to like thread: ${error.message}`);
+  }
 }
 
 export async function deleteThread(id: string, path: string): Promise<void> {
@@ -207,7 +252,7 @@ export async function addCommentToThread(
   commentText: string,
   userId: string,
   path: string,
-  likes: string
+  likes: Array<string>
 ) {
   connectToDB();
 
@@ -224,7 +269,7 @@ export async function addCommentToThread(
       text: commentText,
       author: userId,
       parentId: threadId,
-      likes: 0, // Set the parentId to the original thread's ID
+      likes: [], // Set the parentId to the original thread's ID
     });
 
     // Save the comment thread to the database

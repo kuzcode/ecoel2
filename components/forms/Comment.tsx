@@ -24,7 +24,7 @@ interface Props {
   threadId: string;
   currentUserImg: string;
   currentUserId: string;
-  likes: string;
+  likes: Array<string>;
 }
 
 function Comment({ threadId, currentUserImg, currentUserId, likes }: Props) {

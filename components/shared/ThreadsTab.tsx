@@ -14,7 +14,7 @@ interface Result {
     text: string;
     parentId: string | null;
     verif: boolean;
-    likes: string;
+    likes: Array<string>
     author: {
       name: string;
       image: string;
@@ -51,7 +51,7 @@ async function ThreadsTab({ currentUserId, accountId, accountType }: Props) {
   if (!result) {
     redirect("/");
   }
-
+    
   return (
     <section className='mt-9 flex flex-col gap-10'>
       {result.threads.map((thread) => (
@@ -83,6 +83,6 @@ async function ThreadsTab({ currentUserId, accountId, accountType }: Props) {
       ))}
     </section>
   );
-}
 
+  }
 export default ThreadsTab;

@@ -22,10 +22,11 @@ import { createThread } from "@/lib/actions/thread.actions";
 
 interface Props {
   userId: string;
-  likes: string;
+  likes: Array<string>;
+  name: string;
 }
 
-function PostThread({ userId, likes }: Props) {
+function PostThread({ userId, likes, name }: Props) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -49,19 +50,31 @@ function PostThread({ userId, likes }: Props) {
     await createThread({
       text: values.thread,
       author: userId,
-      communityId: organization ? organization.id : null,
       path: pathname,
-      likes: '0',
+      likes: [],
     });
 
     router.push("/");
   };
+
+  const onReset = async (values: z.infer<typeof ThreadValidation>) => {
+    await createThread({
+      text: values.thread,
+      author: userId,
+      path: pathname,
+      likes: [],
+    });
+
+    router.push("/");
+  };
+
 
   return (
     <Form {...form}>
       <form
         className='mt-10 flex flex-col justify-start gap-10'
         onSubmit={form.handleSubmit(onSubmit)}
+        onReset={form.handleSubmit(onReset)}
       >
         <FormField
           control={form.control}
@@ -79,9 +92,14 @@ function PostThread({ userId, likes }: Props) {
           )}
         />
 
-        <Button type='submit' className='bg-primary-500 rounded-2xl'>
-          Опубликовать
+        <div className="btnContainer">
+        <Button type='submit' className='bg-primary-500 rounded-2xl btn'>
+          Опубликовать как {name}
         </Button>
+        <Button type='reset' className='bg-primary-500 rounded-2xl btn'>
+          Опубликовать анонимно
+        </Button>
+        </div>
       </form>
     </Form>
   );

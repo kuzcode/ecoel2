@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { boolean } from "zod";
 
 const threadSchema = new mongoose.Schema({
   text: {
@@ -15,7 +16,7 @@ const threadSchema = new mongoose.Schema({
     ref: "Community",
   },
   likes:{
-    type: Number,
+    type: Array,
     required: true,
   },
   createdAt: {
